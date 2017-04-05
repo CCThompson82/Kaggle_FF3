@@ -80,7 +80,7 @@ with tf.Session(graph = fish_finder) as session :
                     _ = session.run([train_op], feed_dict = feed_dict)
                     total_fovea += batch_size
             else : # NOTE : This is the last batch before epoch ends ; summarize to tensorboard
-                feed_dict = {coarse_images : img_arr,
+                feed_dict = {coarse_images : batch_arr,
                              is_fish_labels : label_vector,
                              learning_rate : float(open('FishNoF/learning_rate.txt', 'r').read().strip()),
                              }
