@@ -138,3 +138,25 @@ def retrieve_fovea(f, top_left_coords, scale, fov_dim = 72) :
                      offsets[1]:offsets[1]+fov_dim,
                      :]
     return new_img
+
+
+"""Functions for preparing bateches into the FishNoF model"""
+
+def bundle(f_list, label_dictionary, coarse_dims = [64,112,3]) :
+    """
+    Generates an array of coarse images with corresponding FishNoF lables from
+    an input list of filenames.
+    """
+
+    for f in f_list :
+        img = misc.imresize(misc.imread(f, mode = 'RGB'), size = coarse_dims, mode = 'RGB')
+        is_fish = label_dictionary.get(f).get('is_fish')
+
+        try :
+            fish_vector = np.concatenate([fish_vector, is_fish])
+            coarse_arr = np.concatenate([coarse_arr, np.expand_dims(img,0)], 0)
+        except :
+            fish_vector = is_fish
+            coarse_arr = np.expand_dims(img,0)
+
+    return coarse_arr, fish_vector
