@@ -46,7 +46,7 @@ with tf.Session(graph = fish_finder) as session :
         with open('label_dictionary.pickle', 'rb') as handle :
             label_dictionary = pickle.load(handle)
 
-        epoch_keys = train_fnames
+        epoch_keys = train_fnames.copy()
 
         start = datetime.now()
         while len(epoch_keys) > batch_size :
