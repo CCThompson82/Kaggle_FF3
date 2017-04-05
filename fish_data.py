@@ -153,10 +153,10 @@ def bundle(f_list, label_dictionary, coarse_dims = [64,112,3]) :
         is_fish = label_dictionary.get(f).get('is_fish')
 
         if i == 0 :
-            fish_vector = is_fish
+            fish_vector = np.expand_dims(is_fish,0)
             coarse_arr = np.expand_dims(img,0)
         else :
-            fish_vector = np.concatenate([fish_vector, is_fish])
+            fish_vector = np.concatenate([fish_vector, np.expand_dims(is_fish,0)])
             coarse_arr = np.concatenate([coarse_arr, np.expand_dims(img,0)], 0)
 
     return coarse_arr, fish_vector
@@ -182,8 +182,9 @@ def process_fovea(fovea, pixel_norm = 'standard', mutation = False) :
             fovea = np.fliplr(fovea)
         if np.random.randint(0,2,1) == 1 :
             fovea = np.flipud(fovea)
-        if np.random.randint(0,2,1) == 1 :
-            fovea = np.rot90(fovea)
+        if fovea.shape[0] == fovea.shape[1] :
+            if np.random.randint(0,2,1) == 1 :
+                fovea = np.rot90(fovea)
 
     #pixel normalization
     if pixel_norm == 'standard' :
