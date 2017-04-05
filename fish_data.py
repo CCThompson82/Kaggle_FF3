@@ -160,3 +160,47 @@ def bundle(f_list, label_dictionary, coarse_dims = [64,112,3]) :
             coarse_arr = np.concatenate([coarse_arr, np.expand_dims(img,0)], 0)
 
     return coarse_arr, fish_vector
+
+
+def process_fovea(fovea, pixel_norm = 'standard', mutation = False) :
+    """
+    Fn preprocesses a single fovea array.
+
+    If mutation == True, modifications to input images will be made, each with 0.5
+    probability:
+
+        * smallest dimension resized to standard height and width supplied in size param
+        * each channel centered to mean near zero.  Deviation is not normalized.
+        * if mutate == True :
+            * random flip left right
+            * random flip up down
+            * random rotation 90 degrees
+            * TODO : random colour adjustment
+    """
+    if mutation :
+        if np.random.randint(0,2,1) == 1 :
+            fovea = np.fliplr(fovea)
+        if np.random.randint(0,2,1) == 1 :
+            fovea = np.flipud(fovea)
+        if np.random.randint(0,2,1) == 1 :
+            fovea = np.rot90(fovea)
+
+    #pixel normalization
+    if pixel_norm == 'standard' :
+        fovea = fovea.astype(np.float32)
+        fovea = (fovea / 255.0) - 0.5
+    elif pixel_norm == 'float' :
+        fovea = fovea.astype(np.float32)
+        fovea = (fovea / 255.0)
+        fovea = np.clip(fovea, a_min = 0.0, a_max = 1.0)
+    elif pixel_norm == 'centre' :
+        red = 96.48265253757386
+        green = 107.20367931267522
+        blue = 99.97448662926035
+        fovea = fovea.astype(np.float32)
+        fovea[:, :, 0] = fovea[:, :, 0] - red
+        fovea[:, :, 1] = fovea[:, :, 1] - green
+        fovea[:, :, 2] = fovea[:, :, 2] - blue
+    else :
+        pass
+    return fovea
