@@ -39,58 +39,6 @@ with fish_finder.as_default() :
                 b_conv6 = tf.Variable(np.load(pretrained_path+'b_conv_6.npy'), trainable = True)
                 tf.summary.histogram('W_conv6', W_conv6)
                 tf.summary.histogram('b_conv6', b_conv6)
-            """
-            with tf.name_scope('Convolution_7') :
-                W_conv7 = tf.Variable(np.load(pretrained_path+'W_conv_7.npy'), trainable = True)
-                b_conv7 = tf.Variable(np.load(pretrained_path+'b_conv_7.npy'), trainable = True)
-                tf.summary.histogram('W_conv7', W_conv7)
-                tf.summary.histogram('b_conv7', b_conv7)
-            with tf.name_scope('Convolution_8') :
-                W_conv8 = tf.Variable(np.load(pretrained_path+'W_conv_8.npy'), trainable = True)
-                b_conv8 = tf.Variable(np.load(pretrained_path+'b_conv_8.npy'), trainable = True)
-                tf.summary.histogram('W_conv8', W_conv8)
-                tf.summary.histogram('b_conv8', b_conv8)
-            with tf.name_scope('Convolution_9') :
-                W_conv9 = tf.Variable(np.load(pretrained_path+'W_conv_9.npy'), trainable = True)
-                b_conv9 = tf.Variable(np.load(pretrained_path+'b_conv_9.npy'), trainable = True)
-                tf.summary.histogram('W_conv9', W_conv9)
-                tf.summary.histogram('b_conv9', b_conv9)
-            with tf.name_scope('Convolution_10') :
-                W_conv10 = tf.Variable(np.load(pretrained_path+'W_conv_10.npy'), trainable = True)
-                b_conv10 = tf.Variable(np.load(pretrained_path+'b_conv_10.npy'), trainable = True)
-                tf.summary.histogram('W_conv10', W_conv10)
-                tf.summary.histogram('b_conv10', b_conv10)
-            with tf.name_scope('Convolution_11') :
-                W_conv11 = tf.Variable(np.load(pretrained_path+'W_conv_11.npy'), trainable = True)
-                b_conv11 = tf.Variable(np.load(pretrained_path+'b_conv_11.npy'), trainable = True)
-                tf.summary.histogram('W_conv11', W_conv11)
-                tf.summary.histogram('b_conv11', b_conv11)
-            with tf.name_scope('Convolution_12') :
-                W_conv12 = tf.Variable(np.load(pretrained_path+'W_conv_12.npy'), trainable = False)
-                b_conv12 = tf.Variable(np.load(pretrained_path+'b_conv_12.npy'), trainable = False)
-                tf.summary.histogram('W_conv12', W_conv12)
-                tf.summary.histogram('b_conv12', b_conv12)
-            with tf.name_scope('Convolution_13') :
-                W_conv13 = tf.Variable(np.load(pretrained_path+'W_conv_13.npy'), trainable = False)
-                b_conv13 = tf.Variable(np.load(pretrained_path+'b_conv_13.npy'), trainable = False)
-                tf.summary.histogram('W_conv13', W_conv13)
-                tf.summary.histogram('b_conv13', b_conv13)
-            with tf.name_scope('Convolution_14') :
-                W_conv14 = tf.Variable(np.load(pretrained_path+'W_conv_14.npy'), trainable = False)
-                b_conv14 = tf.Variable(np.load(pretrained_path+'b_conv_14.npy'), trainable = False)
-                tf.summary.histogram('W_conv14', W_conv14)
-                tf.summary.histogram('b_conv14', b_conv14)
-            with tf.name_scope('Convolution_15') :
-                W_conv15 = tf.Variable(np.load(pretrained_path+'W_conv_15.npy'), trainable = False)
-                b_conv15 = tf.Variable(np.load(pretrained_path+'b_conv_15.npy'), trainable = False)
-                tf.summary.histogram('W_conv15', W_conv15)
-                tf.summary.histogram('b_conv15', b_conv15)
-            with tf.name_scope('Convolution_16') :
-                W_conv16 = tf.Variable(np.load(pretrained_path+'W_conv_16.npy'), trainable = False)
-                b_conv16 = tf.Variable(np.load(pretrained_path+'b_conv_16.npy'), trainable = False)
-                tf.summary.histogram('W_conv16', W_conv16)
-                tf.summary.histogram('b_conv16', b_conv16)
-            """
         with tf.variable_scope('Dense_layers') :
             with tf.name_scope('dense_1') :
                 W_fc1 = tf.Variable(tf.truncated_normal([nodes_after_conv, fc_depth[0]], stddev = stddev ))
@@ -163,61 +111,6 @@ with fish_finder.as_default() :
                                 ksize = [1, pool_kernel, pool_kernel,1],
                                 strides = [1, pool_stride, pool_stride, 1],
                                 padding ='VALID')
-            """
-            conv_layer = tf.nn.relu(
-                                tf.nn.conv2d(conv_layer, filter = W_conv7,
-                                    strides = [1, conv_stride, conv_stride, 1],
-                                    padding = 'SAME') + b_conv7)
-            conv_layer = tf.nn.max_pool(
-                                    tf.nn.relu(
-                                        tf.nn.conv2d(conv_layer, filter = W_conv8,
-                                            strides = [1, conv_stride, conv_stride, 1],
-                                            padding = 'SAME') + b_conv8),
-                                    ksize = [1, pool_kernel, pool_kernel,1],
-                                    strides = [1, pool_stride, pool_stride, 1],
-                                    padding ='VALID')
-            conv_layer = tf.nn.relu(
-                                tf.nn.conv2d(conv_layer, filter = W_conv9,
-                                    strides = [1, conv_stride, conv_stride, 1],
-                                    padding = 'SAME') + b_conv9)
-            conv_layer = tf.nn.relu(
-                                tf.nn.conv2d(conv_layer, filter = W_conv10,
-                                    strides = [1, conv_stride, conv_stride, 1],
-                                    padding = 'SAME') + b_conv10)
-            conv_layer = tf.nn.relu(
-                                tf.nn.conv2d(conv_layer, filter = W_conv11,
-                                    strides = [1, conv_stride, conv_stride, 1],
-                                    padding = 'SAME') + b_conv11)
-            conv_layer = tf.nn.max_pool(
-                                    tf.nn.relu(
-                                        tf.nn.conv2d(conv_layer, filter = W_conv12,
-                                            strides = [1, conv_stride, conv_stride, 1],
-                                            padding = 'SAME') + b_conv12),
-                                    ksize = [1, pool_kernel, pool_kernel,1],
-                                    strides = [1, pool_stride, pool_stride, 1],
-                                    padding ='VALID')
-
-            conv_layer = tf.nn.relu(
-                                tf.nn.conv2d(conv_layer, filter = W_conv13,
-                                    strides = [1, conv_stride, conv_stride, 1],
-                                    padding = 'SAME') + b_conv13)
-            conv_layer = tf.nn.relu(
-                                tf.nn.conv2d(conv_layer, filter = W_conv14,
-                                    strides = [1, conv_stride, conv_stride, 1],
-                                    padding = 'SAME') + b_conv14)
-            conv_layer = tf.nn.relu(
-                                tf.nn.conv2d(conv_layer, filter = W_conv15,
-                                    strides = [1, conv_stride, conv_stride, 1],
-                                    padding = 'SAME') + b_conv15)
-            conv_layer = tf.nn.max_pool(
-                                    tf.nn.relu(
-                                        tf.nn.conv2d(conv_layer, filter = W_conv16,
-                                            strides = [1, conv_stride, conv_stride, 1],
-                                            padding = 'SAME') + b_conv16),
-                                    ksize = [1, pool_kernel, pool_kernel,1],
-                                    strides = [1, pool_stride, pool_stride, 1],
-                                    padding ='VALID')
-            """
         return conv_layer
 
     def dense_layers(data, keep_prob) :
