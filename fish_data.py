@@ -148,15 +148,15 @@ def bundle(f_list, label_dictionary, coarse_dims = [64,112,3]) :
     an input list of filenames.
     """
 
-    for f in f_list :
+    for i, f in enumerate(f_list) :
         img = misc.imresize(misc.imread(f, mode = 'RGB'), size = coarse_dims, mode = 'RGB')
         is_fish = label_dictionary.get(f).get('is_fish')
 
-        try :
-            fish_vector = np.concatenate([fish_vector, is_fish])
-            coarse_arr = np.concatenate([coarse_arr, np.expand_dims(img,0)], 0)
-        except :
+        if i == 0 :
             fish_vector = is_fish
             coarse_arr = np.expand_dims(img,0)
+        else :
+            fish_vector = np.concatenate([fish_vector, is_fish])
+            coarse_arr = np.concatenate([coarse_arr, np.expand_dims(img,0)], 0)
 
     return coarse_arr, fish_vector
