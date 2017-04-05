@@ -93,7 +93,7 @@ with tf.Session(graph = fish_finder) as session :
         epoch_time = (end - start).total_seconds()
         epochs_completed += 1
         saver.save(session, md+'/checkpoint', global_step = epochs_completed)
-        print("Epoch {} completed : {} fovea observed in {} s (fovea/s : {}). Model checkpoint created!".format(epochs_completed, total_fovea, epoch_time, len(epoch_dictionary)/epoch_time))
+        print("Epoch {} completed : {} fovea observed in {} s (fovea/s : {}). Model checkpoint created!".format(epochs_completed, total_fovea, epoch_time, len(label_dictionary)/epoch_time))
         meta_dict[epochs_completed] = {'Num_epochs' : epochs_completed,
                                'fovea_trained' : total_fovea,
                                'checkpoint_directory' :  os.getcwd()+'/model_checkpoints/'+version_ID}
