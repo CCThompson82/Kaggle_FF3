@@ -16,7 +16,7 @@ with fish_finder.as_default() :
                 tf.summary.histogram('b_conv1', b_conv1)
             with tf.name_scope('Convolution_2') :
                 W_conv2 = tf.Variable(np.load(pretrained_path+'W_conv_2.npy'), trainable = True)
-                b_conv2 = tf.Variable(np.load(pretrained_path+'b_conv_2.npy'), trainable = False)
+                b_conv2 = tf.Variable(np.load(pretrained_path+'b_conv_2.npy'), trainable = True)
                 tf.summary.histogram('W_conv2', W_conv2)
                 tf.summary.histogram('b_conv2', b_conv2)
             with tf.name_scope('Convolution_3') :
@@ -140,16 +140,17 @@ with fish_finder.as_default() :
             coarse_images = tf.placeholder(tf.float32, shape = [batch_size, coarse_dims[0], coarse_dims[1], num_channels])
             is_fish_labels = tf.placeholder(tf.float32, shape = [batch_size,1])
             learning_rate = tf.placeholder(tf.float32, shape = () )
+            beta = tf.placeholder(tf.float32, shape = () )
         with tf.name_scope('Network') :
             conv_output = convolutions(coarse_images)
             tf.summary.histogram('Conv_Output', conv_output)
             dense_input = tf.contrib.layers.flatten(conv_output)
             dense_output = dense_layers(dense_input, keep_prob = keep_prob)
         with tf.name_scope('Classifier') :
-            logits = tf.matmul(dense_output, W_clf) + b_clf
+            logits = tf.matmul(dense_output, W_clf) #+ b_clf
         with tf.name_scope('Backpropigation') :
-            xent = tf.nn.sigmoid_cross_entropy_with_logits(
-                        logits = logits, targets = is_fish_labels)
+            xent = tf.nn.weighted_cross_entropy_with_logits(
+                        logits = logits, targets = is_fish_labels, pos_weight = beta)
             cross_entropy = tf.reduce_mean(xent)
             cost = cross_entropy # + regularization or other cost amendment?
 
@@ -165,11 +166,13 @@ with fish_finder.as_default() :
             valid_dense_input = tf.contrib.layers.flatten(valid_conv_output)
             valid_dense_output = dense_layers(valid_dense_input, keep_prob = [1.0,1.0,1.0,1.0])
         with tf.name_scope('Prediction') :
-            valid_probs = tf.nn.sigmoid(tf.matmul(valid_dense_output, W_clf) + b_clf)
+            valid_probs = tf.nn.sigmoid(tf.matmul(valid_dense_output, W_clf)) #+ b_clf)
+            tf.summary.histogram('Validation_Set_Probability', valid_probs)
             valid_preds = tf.to_int32(tf.greater(valid_probs, 0.5))
-            valid_acc = tf.reduce_mean(tf.to_int32(tf.equal( valid_preds, valid_labels)))
+            valid_acc = tf.reduce_mean(tf.cast(tf.equal( valid_preds, valid_labels), tf.float32))
 
     with tf.name_scope('Summaries') :
+        tf.summary.scalar('Weight_of_Fish', beta)
         tf.summary.scalar('Cross_entropy', cross_entropy)
         tf.summary.scalar('Learning_rate', learning_rate)
         tf.summary.scalar('Valid_Accuracy', valid_acc)

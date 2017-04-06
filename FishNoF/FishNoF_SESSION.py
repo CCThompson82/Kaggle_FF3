@@ -64,7 +64,8 @@ with tf.Session(graph = fish_finder) as session :
                 if (epochs_completed < 2) and ((total_fovea / batch_size) % 5 ) == 0:
                     feed_dict = {coarse_images : batch_arr,
                                  is_fish_labels : label_vector,
-                                 learning_rate : float(open('FishNoF/learning_rate.txt', 'r').read().strip())
+                                 learning_rate : float(open('FishNoF/learning_rate.txt', 'r').read().strip()),
+                                 beta : float(open('FishNoF/beta_rate.txt', 'r').read().strip())
                                  }
 
                     _, ce = session.run([train_op, cross_entropy], feed_dict = feed_dict)
@@ -74,7 +75,8 @@ with tf.Session(graph = fish_finder) as session :
                 else :
                     feed_dict = {coarse_images : batch_arr,
                                  is_fish_labels : label_vector,
-                                 learning_rate : float(open('FishNoF/learning_rate.txt', 'r').read().strip())
+                                 learning_rate : float(open('FishNoF/learning_rate.txt', 'r').read().strip()),
+                                 beta : float(open('FishNoF/beta_rate.txt', 'r').read().strip())
                                  }
 
                     _ = session.run([train_op], feed_dict = feed_dict)
@@ -83,6 +85,7 @@ with tf.Session(graph = fish_finder) as session :
                 feed_dict = {coarse_images : batch_arr,
                              is_fish_labels : label_vector,
                              learning_rate : float(open('FishNoF/learning_rate.txt', 'r').read().strip()),
+                             beta : float(open('FishNoF/beta_rate.txt', 'r').read().strip())
                              }
                 _ , summary_fetch = session.run([train_op, summaries], feed_dict = feed_dict)
 
@@ -93,7 +96,7 @@ with tf.Session(graph = fish_finder) as session :
         epoch_time = (end - start).total_seconds()
         epochs_completed += 1
         saver.save(session, md+'/checkpoint', global_step = epochs_completed)
-        print("Epoch {} completed : {} fovea observed in {} s (fovea/s : {}). Model checkpoint created!".format(epochs_completed, total_fovea, epoch_time, len(label_dictionary)/epoch_time))
+        print("Epoch {} completed : {} coarse images observed in {} s ({} images/sec). Model checkpoint created!".format(epochs_completed, total_fovea, epoch_time, len(label_dictionary)/epoch_time))
         meta_dict[epochs_completed] = {'Num_epochs' : epochs_completed,
                                'fovea_trained' : total_fovea,
                                'checkpoint_directory' :  os.getcwd()+'/model_checkpoints/'+version_ID}
