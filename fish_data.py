@@ -205,3 +205,68 @@ def process_fovea(fovea, pixel_norm = 'standard', mutation = False) :
     else :
         pass
     return fovea
+
+
+def bundle_mt(f_list, label_dictionary, coarse_dims = [64,112,3], fov_dim = 72) :
+    """
+    Generates an array of coarse images with corresponding labels from
+    an input list of filenames.
+
+    Returns :
+        * coarse_arr - the array of coarse images (batch, y, x, channels).  Will
+            need to be processed for network input.
+        * is_fish - boolean array that describes whether a fish is present
+            in the image
+        * coords - float array ( [0,1]) that describes the position of
+            the top left corner for a bounding box of the fish.
+        * scale - array of floats.  Describes the scale for the high-resolution
+            image, such that a bounding box that begins with the `coords` and
+            extends in both the y and x directions for the number of pixels
+            supplied by `fov_dim`, will produce a fovea that circumscribes the
+            entire fish.
+        * weights - weighting for coords / scale cost calculation.
+        ++++++
+        NOTE : If the value for coord or scale is None when keyed from the
+        label_dictionary, zeros will be imputed for both coords and scale. In
+        such chases, zeros will also be imputed for the `weights` parameter.
+        Thus, any loss or cost generated from the prediction of these coarse
+        images, will be negated.  For NoF images, these parameters will always
+        be None.  For Fish images, the user will annotate the appropriate coords
+        and scale and save the label_dictionary after significant progress.
+        Thus training can begin without having these labels annotated, and the
+        only learning task that is updated will be the FishNoF classification.
+        As more images are annotated with coords and scale, the learning for the
+        second task of fish bbox identification will increase.
+        ++++++
+
+    """
+
+    for i, f in enumerate(f_list) :
+        img = misc.imresize(misc.imread(f, mode = 'RGB'), size = coarse_dims, mode = 'RGB')
+        is_fish = label_dictionary.get(f).get('is_fish')
+        scale = label_dictionary.get(f).get('scale')
+        coords = label_dictionary.get(f).get('coord')
+
+
+        if (scale is None) or (coords is None) :
+            scale = np.array([-1])
+            coords = np.array([-1,-1])
+            weights = np.array([0])
+        else :
+            weights = np.array([1])
+
+        if i == 0 :
+            fish_vector = np.expand_dims(is_fish,0)
+            coarse_arr = np.expand_dims(img,0)
+            scale_vector = np.expand_dims(scale,0)
+            coords_arr = np.expand_dims(coords, 0)
+            weights_vector = np.expand_dims(weights, 0)
+
+        else :
+            fish_vector = np.concatenate([fish_vector, np.expand_dims(is_fish,0)])
+            coarse_arr = np.concatenate([coarse_arr, np.expand_dims(img,0)], 0)
+            scale_vector = np.concatenate([scale_vector, np.expand_dims(scale, 0)], 0)
+            coords_arr = np.concatenate([coords_arr, np.expand_dims(coords, 0)], 0)
+            weights_vector = np.concatenate([weights_vector, np.expand_dims(weights, 0)], 0)
+
+    return coarse_arr, fish_vector.astype(np.int32), np.concatenate([scale_vector, coords_arr], 1), weights_vector
