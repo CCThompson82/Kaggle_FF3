@@ -54,61 +54,69 @@ def show_panel(image) :
     plt.imshow(image)
     plt.show()
 
-def boxit(f, coarse_dims = [64, 112, 3], fov_dim = 72) :
+def boxit(coarse_dims = [64, 112, 3], fov_dim = 72) :
     """
     Function to efficiently annotate squared bbox from coarse images of
     a standard dimension (which may not necessarily reflect the original
-    dimensions of the high-resolution image).
+    dimensions of the high-resolution image).  Selects images randomly that
+    have no box labels associated yet.  Skips NoF images.
     """
-    img = misc.imread(f, mode = 'RGB')
-    shape = img.shape
+    # get list of filenames to be sampled
+    with open('label_dictionary.pickle', 'rb') as handle :
+        label_dictionary = pickle.load(handle)
 
-    imgC = misc.imresize(img, size = coarse_dims, mode = 'RGB')
+    f_list = []
+    for key in label_dictionary.keys() :
+        if label_dictionary.get(key).get('label') != 'NoF' :
+            if label_dictionary.get(key).get('scale') is None :
+                f_list.append(key)
 
-    show_panel(imgC)
 
-    top_left_y = input("y coordinate of top left border   ")
-    top_left_x = input("x coordinate of the top left border   ")
-    bottom_right_y = input("y coordinate of bottom right border   ")
-    bottom_right_x = input("x coordinate of bottom right border   ")
+    while True :
 
-    tl = np.array([int(top_left_y), int(top_left_x)]) / np.array(coarse_dims[0:2])
-    br = np.array([int(bottom_right_y), int(bottom_right_x)]) / np.array(coarse_dims[0:2])
+        f = f_list.pop(np.random.randint(0, len(f_list)))
+        print("="*50)
+        print("{} Keys remaining ".format(len(f_list)))
+        print("-"*50)
+        print(f)
+        print("-"*50)
 
-    TL = np.round(tl * shape[0:2]).astype(int)
-    BR = np.round(br * shape[0:2]).astype(int)
 
-    dims = BR - TL
-    dim = np.max(dims)
-    ext = (dim - np.min(dims)) // 2
+        img = misc.imread(f, mode = 'RGB')
+        plt.imshow(img)
+        plt.show()
+        shape = img.shape
 
-    if dims[0] > dims[1] :
-        TL[1] = TL[1] - ext
-    else :
-        TL[0] = TL[0] - ext
+        imgC = misc.imresize(img, size = coarse_dims, mode = 'RGB')
 
-    fov = img[TL[0]:TL[0]+dim, TL[1]:TL[1]+dim, :]
+        plt.imshow(imgC)
+        plt.grid(b=True, which = 'both', linestyle = '--', color = 'red')
+        plt.show()
 
-    show_panel(fov)
+        top_left_y = input("y coordinate of top left border   ")
+        top_left_x = input("x coordinate of the top left border   ")
+        bottom_right_y = input("y coordinate of bottom right border   ")
+        bottom_right_x = input("x coordinate of bottom right border   ")
 
-    adjust = input("Adjustments needed? (y/n)    ")
+        tl = np.array([int(top_left_y), int(top_left_x)]) / np.array(coarse_dims[0:2])
+        br = np.array([int(bottom_right_y), int(bottom_right_x)]) / np.array(coarse_dims[0:2])
 
-    if adjust == 'n' :
-        proceed = True
-    else :
-        proceed = False
-    while proceed == False :
-        ad_horizontal = int(input("adjust left or right? (neg is left)   "  ))
-        ad_vertical = int(input("adjust up or down? (neg is up)     "))
-        ad_zoom = float(input("percent zoom (1.0 = same size, >1 -> zoom out)?    "))
+        TL = np.round(tl * shape[0:2]).astype(int)
+        BR = np.round(br * shape[0:2]).astype(int)
 
-        TL[0] = TL[0] + ad_horizontal
-        TL[1] = TL[1] + ad_vertical
+        dims = BR - TL
+        dim = np.max(dims)
+        ext = (dim - np.min(dims)) // 2
 
-        dim = np.round(dim * ad_zoom).astype(int)
+        if dims[0] > dims[1] :
+            TL[1] = TL[1] - ext
+        else :
+            TL[0] = TL[0] - ext
 
         fov = img[TL[0]:TL[0]+dim, TL[1]:TL[1]+dim, :]
-        show_panel(fov)
+
+        plt.imshow(fov)
+        plt.show()
 
         adjust = input("Adjustments needed? (y/n)    ")
 
@@ -116,10 +124,40 @@ def boxit(f, coarse_dims = [64, 112, 3], fov_dim = 72) :
             proceed = True
         else :
             proceed = False
+        while proceed == False :
+            ad_horizontal = int(input("adjust left or right? (neg is left)   "  ))
+            ad_vertical = int(input("adjust up or down? (neg is up)     "))
+            ad_zoom = float(input("percent zoom (1.0 = same size, >1 -> zoom out)?    "))
 
-    scale = fov_dim / dim
-    # convert pixel offsets of the top left coordinate to the proportion of the y and x dimensions of the original high-resolution image
-    return TL / shape[0:2], scale
+            TL[1] = TL[1] + ad_horizontal
+            TL[0] = TL[0] + ad_vertical
+
+            dim = np.round(dim * ad_zoom).astype(int)
+
+            fov = img[TL[0]:TL[0]+dim, TL[1]:TL[1]+dim, :]
+            plt.imshow(fov)
+            plt.show()
+
+            adjust = input("Adjustments needed? (y/n)    ")
+
+            if adjust == 'n' :
+                proceed = True
+            else :
+                proceed = False
+
+        scale = fov_dim / dim
+        # convert pixel offsets of the top left coordinate to the proportion of the y and x dimensions of the original high-resolution image
+        TL = TL / shape[0:2]
+
+        label_dictionary[f]['coord'] = TL
+        label_dictionary[f]['scale'] = np.array([scale])
+
+        print(label_dictionary[f])
+
+        commit = input("Save dictionary? (y/n)  ")
+        if commit == 'y' :
+            with open('label_dictionary.pickle', 'wb') as fld :
+                pickle.dump(label_dictionary, fld)
 
 
 def retrieve_fovea(f, top_left_coords, scale, fov_dim = 72) :
