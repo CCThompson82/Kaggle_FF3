@@ -166,11 +166,18 @@ def retrieve_fovea(f, top_left_coords, scale, fov_dim = 72) :
     of a bounding box, plus the scale that yields an appropriate zoom for a
     circumscribing box of known size.
     """
+
     img = misc.imread(f, mode = 'RGB')
     img_shape = img.shape
+
     sc_img = misc.imresize(img, size = scale, mode = 'RGB')
     sc_shape = sc_img.shape
     offsets = np.round( top_left_coords * sc_shape[0:2]   ).astype(int)
+
+    overshoot_value = (sc_shape[0:2] - (offsets+fov_dim) )
+    overshoot_bool = (offsets+fov_dim > sc_shape[0:2]).astype(int)
+
+    offsets += (overshoot_value*overshoot_bool)
 
     new_img = sc_img[offsets[0]:offsets[0]+fov_dim,
                      offsets[1]:offsets[1]+fov_dim,
