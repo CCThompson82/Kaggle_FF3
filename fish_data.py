@@ -287,7 +287,11 @@ def bundle_mt(f_list, label_dictionary, coarse_dims = [64,112,3], fov_dim = 72) 
     """
 
     for i, f in enumerate(f_list) :
-        img = misc.imresize(misc.imread(f, mode = 'RGB'), size = coarse_dims, mode = 'RGB')
+        # To speed retrieval I have saved the coarse images for every high resolution image in
+        # an alternative directory that starts with 'data/coarse_train/...' as opposed to
+        # 'data/train/...'
+        coarse_key = 'data/coarse_'+f[5:]
+        img = misc.imread(coarse_key, mode = 'RGB')
         is_fish = label_dictionary.get(f).get('is_fish')
         scale = label_dictionary.get(f).get('scale')
         coords = label_dictionary.get(f).get('coord')
