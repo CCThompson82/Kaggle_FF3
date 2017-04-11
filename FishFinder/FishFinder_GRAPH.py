@@ -215,10 +215,12 @@ with fish_finder.as_default() :
             tf.summary.scalar('FiNoF_CrossEntropy', valid_fish_xent)
             tf.summary.scalar('Box_CrossEntropy', valid_box_xent)
         with tf.name_scope('Parameters') :
+            tf.summary.scalar('Beta_Reg_rate', beta_regularizer)
             tf.summary.scalar('LearningRate', learning_rate)
             tf.summary.scalar('beta', beta)
         with tf.name_scope('Train_Set') :
             tf.summary.scalar("Cost", cost)
+            tf.summary.scalar('Regularization', regularization_term)
             tf.summary.scalar('Fish_Cross_entropy', cross_entropy_FishNoF)
             tf.summary.scalar('Box_Cross_entropy', tf.divide(cross_entropy_box, tf.reduce_mean(weights)))
         summaries = tf.summary.merge_all()

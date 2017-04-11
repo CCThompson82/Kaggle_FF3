@@ -65,6 +65,9 @@ def boxit(coarse_dims = [64, 112, 3], fov_dim = 72) :
     with open('label_dictionary.pickle', 'rb') as handle :
         label_dictionary = pickle.load(handle)
 
+    with open('prediction_dictionary.pickle', 'rb') as handle :
+        prediction_dictionary = pickle.load(handle)
+
     f_list = []
     for key in label_dictionary.keys() :
         if label_dictionary.get(key).get('label') != 'NoF' :
@@ -79,8 +82,9 @@ def boxit(coarse_dims = [64, 112, 3], fov_dim = 72) :
         print("{} Keys remaining ".format(len(f_list)))
         print("-"*50)
         print(f)
+        print(prediction_dictionary.get(f))
         print("-"*50)
-
+        
 
         img = misc.imread(f, mode = 'RGB')
         plt.imshow(img)
