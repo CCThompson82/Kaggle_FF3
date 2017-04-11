@@ -1,7 +1,7 @@
 # General
 num_channels = 3
 coarse_dims = [64,112,3]
-batch_size = 128
+batch_size = 256
 
 stddev = 0.2
 
