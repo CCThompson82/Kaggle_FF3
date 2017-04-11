@@ -152,6 +152,7 @@ with fish_finder.as_default() :
 
             learning_rate = tf.placeholder(tf.float32, shape = () )
             beta = tf.placeholder(tf.float32, shape = () )
+            beta_regularizer = tf.placeholder(tf.float32, shape = ())
         with tf.name_scope('Network') :
             conv_output = convolutions(coarse_images)
             dense_input = tf.contrib.layers.flatten(conv_output)
@@ -165,8 +166,13 @@ with fish_finder.as_default() :
             box_xent = tf.nn.sigmoid_cross_entropy_with_logits( logits = box_logits, targets = box_targets)
             cross_entropy_FishNoF = tf.reduce_mean(fishnof_xent)
 
+            regularization_term = (tf.nn.l2_loss(W_fc4) +
+                                   tf.nn.l2_loss(W_fc3) +
+                                   tf.nn.l2_loss(W_fc2) +
+                                   tf.nn.l2_loss(W_fc1)
+                                  ) * beta_regularizer
             cross_entropy_box = tf.reduce_mean(tf.multiply(box_xent, weights))
-            cost = cross_entropy_FishNoF + cross_entropy_box # + regularization or other cost amendment?
+            cost = cross_entropy_FishNoF + cross_entropy_box + regularization_term
 
             train_op = tf.train.AdagradOptimizer(learning_rate).minimize(cost)
 

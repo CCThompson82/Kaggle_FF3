@@ -87,7 +87,8 @@ with tf.Session(graph = fish_finder) as session :
                                  valid_box_targets : valid_box,
                                  valid_box_weights : valid_weights,
                                  learning_rate : float(open('FishFinder/learning_rate.txt', 'r').read().strip()),
-                                 beta : float(open('FishFinder/beta_rate.txt', 'r').read().strip())
+                                 beta : float(open('FishFinder/beta_rate.txt', 'r').read().strip()),
+                                 beta_regularizer : float(open('FishFinder/beta_reg.txt', 'r').read().strip())
                                  }
 
                     _, ce, summary_fetch = session.run([train_op, cost, summaries], feed_dict = feed_dict)
@@ -101,7 +102,8 @@ with tf.Session(graph = fish_finder) as session :
                                  box_targets : box_arr,
                                  weights : weights_vector,
                                  learning_rate : float(open('FishFinder/learning_rate.txt', 'r').read().strip()),
-                                 beta : float(open('FishFinder/beta_rate.txt', 'r').read().strip())
+                                 beta : float(open('FishFinder/beta_rate.txt', 'r').read().strip()),
+                                 beta_regularizer : float(open('FishFinder/beta_reg.txt', 'r').read().strip())
                                  }
 
                     _ = session.run([train_op], feed_dict = feed_dict)
@@ -116,7 +118,8 @@ with tf.Session(graph = fish_finder) as session :
                              valid_box_targets : valid_box,
                              valid_box_weights : valid_weights,
                              learning_rate : float(open('FishFinder/learning_rate.txt', 'r').read().strip()),
-                             beta : float(open('FishFinder/beta_rate.txt', 'r').read().strip())
+                             beta : float(open('FishFinder/beta_rate.txt', 'r').read().strip()),
+                             beta_regularizer : float(open('FishFinder/beta_reg.txt', 'r').read().strip())
                              }
                 _ , summary_fetch, batch_FishNoF_preds, batch_box_preds = session.run([train_op, summaries, stack_FishNoF_preds, stack_box_preds], feed_dict = feed_dict)
 
