@@ -135,7 +135,7 @@ with tf.Session(graph = fishyfish) as session :
         epoch_time = (end - start).total_seconds()
         epochs_completed += 1
         saver.save(session, md+'/checkpoint', global_step = epochs_completed)
-        print("Epoch {} completed : {} coarse images observed in {} s ({} images/sec). Model Saved!".format(epochs_completed, total_fovea, epoch_time, len(label_dictionary)/epoch_time))
+        print("Epoch {} completed : {} coarse images observed in {} s ({} images/sec). Model Saved!".format(epochs_completed, total_fovea, epoch_time, len(train_fnames)/epoch_time))
         meta_dict[epochs_completed] = {'Num_epochs' : epochs_completed,
                                'examples_trained' : total_fovea,
                                'checkpoint_directory' :  os.getcwd()+'/model_checkpoints/'+version_ID}
