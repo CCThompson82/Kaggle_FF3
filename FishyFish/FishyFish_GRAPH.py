@@ -5,7 +5,7 @@ convolution steps"""
 
 fishyfish = tf.Graph()
 
-with fish_finder.as_default() :
+with fishyfish.as_default() :
     # Variables
     with tf.variable_scope('Variables') :
         with tf.variable_scope('Convolutions') :

@@ -424,7 +424,7 @@ def prepare_FishyFish_batch(f_list, embedding_df, annotated_fovea_directory, pre
 
     batch_embedding = embedding_df.loc[f_list, :]
     batch_FiNoF = FiNoF_prob_series.loc[f_list]
-    batch_labels = label_df.loc[f_list]
+    batch_labs = label_df.loc[f_list]
 
     for key in f_list :
         new_key = key[11:]
@@ -465,9 +465,9 @@ def prepare_FishyFish_batch(f_list, embedding_df, annotated_fovea_directory, pre
             fov_weight_stack = fov_weight
 
 
-    class_labels = np.argmax(np.array(batch_labels), 1)
+    class_labels = np.argmax(np.array(batch_labs), 1)
     batch_label_weights = np.ones([len(class_labels)])
     for ix, label in enumerate(class_labels) :
         batch_label_weights[ix] = class_weight_dictionary.get(label)
 
-    return batch_embedding, batch_FiNoF, batch_labels, batch_label_weights, fov_stack, fov_weight_stack
+    return batch_embedding, batch_FiNoF, batch_labs, batch_label_weights, fov_stack, fov_weight_stack
