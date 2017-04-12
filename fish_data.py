@@ -428,26 +428,14 @@ def prepare_FishyFish_batch(f_list, embedding_df, annotated_fovea_directory, pre
 
     for key in f_list :
         new_key = key[11:]
-        if new_key in os.listdir(annotated_fovea_directory) :
+        if key in list(annotated_boxes.index) :
             fov = misc.imread(annotated_fovea_directory+new_key, mode = 'RGB')
             fov_weight = np.array([1])
 
-        elif key in list(annotated_boxes.index) :
-            scale = annotated_boxes.loc[key, 'scale']
-            tlcoord = annotated_boxes.loc[key, ['y_offset', 'x_offset']]
-
-            fov = retrieve_fovea(key, top_left_coords = tlcoord, scale = scale, fov_dim = 72)
-            fov_weight = np.array([1])
-
-        elif new_key in os.listdir(predicted_fovea_directory) :
+        else :
             fov = misc.imread(predicted_fovea_directory+new_key, mode = 'RGB')
             fov_weight = np.array([fov_weight_predicted])
-        else :
-            scale = box_preds.loc[key, 'scale']
-            tlcoord = box_preds.loc[key, ['y_offset', 'x_offset']]
 
-            fov = retrieve_fovea(key, top_left_coords = tlcoord, scale = scale, fov_dim = 72)
-            fov_weight = np.array([fov_weight_predicted])
 
         rand_y = np.random.randint(0,8)
         rand_x = np.random.randint(0,8)

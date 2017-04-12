@@ -128,6 +128,7 @@ with fishyfish.as_default() :
         fc_layer = fc(fc_layer, W_fc2, b_fc2,  keep_prob[1])
         fc_layer = fc(fc_layer, W_fc3, b_fc3, keep_prob[2])
         fc_layer = tf.concat(1, [fc_layer, embedding, FiNoF])
+        print(fc_layer)
         fc_layer = fc(fc_layer, W_fc4, b_fc4, keep_prob[3])
         return fc_layer
 
@@ -221,4 +222,4 @@ with fishyfish.as_default() :
             t_dense_output = dense_layers(t_dense_input, test_embedding, test_fish_prob, keep_prob = [1.0, 1.0, 1.0, 1.0])
         with tf.name_scope('Classifiers') :
             test_logits = tf.matmul(t_dense_output, W_clf) + b_clf
-            test_predictions = tf.nn.sigmoid(test_logits)
+            test_predictions = tf.nn.softmax(test_logits)
