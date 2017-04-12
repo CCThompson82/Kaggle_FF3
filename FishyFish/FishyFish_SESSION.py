@@ -46,7 +46,7 @@ with tf.Session(graph = fishyfish) as session :
                                            predicted_fovea_directory = 'data/predicted_fovea_train/',
                                            annotated_boxes = annotated_boxes,
                                            box_preds = box_preds,
-                                           label_df = labels,
+                                           label_df = labels_df,
                                            FiNoF_prob_series = FiNoF_prob,
                                            class_weight_dictionary = class_weight_dictionary,
                                            fov_weight_predicted = 0.2, fov_crop =64))
@@ -62,12 +62,12 @@ with tf.Session(graph = fishyfish) as session :
                 batch_key_list.append( epoch_keys.pop(np.random.randint(0,len(epoch_keys))))
 
             em_arr, FiNoF_arr, labels_arr, lab_weights_arr, fov_arr, fov_weights_arr = (
-                            fd.prepare_FishyFish_batch(f_list = batch_key_names, embedding_df = embedding_df,
+                            fd.prepare_FishyFish_batch(f_list = batch_key_list, embedding_df = embedding_df,
                                        annotated_fovea_directory = 'data/annotated_fovea_train/',
                                        predicted_fovea_directory = 'data/predicted_fovea_train/',
                                        annotated_boxes = annotated_boxes,
                                        box_preds = box_preds,
-                                       label_df = labels,
+                                       label_df = labels_df,
                                        FiNoF_prob_series = FiNoF_prob,
                                        class_weight_dictionary = class_weight_dictionary,
                                        fov_weight_predicted = 0.2, fov_crop =64))
@@ -77,17 +77,17 @@ with tf.Session(graph = fishyfish) as session :
                 if (epochs_completed < 2) and ((total_fovea / batch_size) % 5 ) == 0:
                     feed_dict = {fovea : fov_arr,
                                  embedding : em_arr,
-                                 fish_prob : FiNoF_arr,
+                                 fish_prob : np.expand_dims(FiNoF_arr, 1),
                                  labels : labels_arr,
-                                 fovea_weights : fov_weights_arr,
-                                 label_weights : lab_weights_arr,
+                                 fovea_weights : np.expand_dims(fov_weights_arr,1),
+                                 label_weights : np.expand_dims(lab_weights_arr,1),
                                  learning_rate : float(open('FishyFish/learning_rate.txt', 'r').read().strip()),
                                  beta_regularizer : float(open('FishyFish/beta_reg.txt', 'r').read().strip()),
                                  gamma_fovea : float(open('FishyFish/fovea_coef.txt', 'r').read().strip()),
                                  gamma_label : float(open('FishyFish/label_coef.txt', 'r').read().strip()),
                                  val_fovea : valid_fov_stack,
                                  val_embedding : valid_embeddings,
-                                 val_fish_prob : valid_FiNoF,
+                                 val_fish_prob : np.expand_dims(valid_FiNoF,1 ),
                                  val_labels : valid_OH_labels
                                  }
 
@@ -99,10 +99,10 @@ with tf.Session(graph = fishyfish) as session :
                 else :
                     feed_dict = {fovea : fov_arr,
                                  embedding : em_arr,
-                                 fish_prob : FiNoF_arr,
+                                 fish_prob : np.expand_dims(FiNoF_arr,1),
                                  labels : labels_arr,
-                                 fovea_weights : fov_weights_arr,
-                                 label_weights : lab_weights_arr,
+                                 fovea_weights : np.expand_dims(fov_weights_arr,1),
+                                 label_weights : np.expand_dims(lab_weights_arr,1),
                                  learning_rate : float(open('FishyFish/learning_rate.txt', 'r').read().strip()),
                                  beta_regularizer : float(open('FishyFish/beta_reg.txt', 'r').read().strip()),
                                  gamma_fovea : float(open('FishyFish/fovea_coef.txt', 'r').read().strip()),
@@ -114,17 +114,17 @@ with tf.Session(graph = fishyfish) as session :
             else : # NOTE : This is the last batch before epoch ends ; summarize to tensorboard
                 feed_dict = {fovea : fov_arr,
                              embedding : em_arr,
-                             fish_prob : FiNoF_arr,
+                             fish_prob : np.expand_dims(FiNoF_arr,1),
                              labels : labels_arr,
-                             fovea_weights : fov_weights_arr,
-                             label_weights : lab_weights_arr,
+                             fovea_weights : np.expand_dims(fov_weights_arr, 1),
+                             label_weights : np.expand_dims(lab_weights_arr, 1),
                              learning_rate : float(open('FishyFish/learning_rate.txt', 'r').read().strip()),
                              beta_regularizer : float(open('FishyFish/beta_reg.txt', 'r').read().strip()),
                              gamma_fovea : float(open('FishyFish/fovea_coef.txt', 'r').read().strip()),
                              gamma_label : float(open('FishyFish/label_coef.txt', 'r').read().strip()),
                              val_fovea : valid_fov_stack,
                              val_embedding : valid_embeddings,
-                             val_fish_prob : valid_FiNoF,
+                             val_fish_prob : np.expand_dims(valid_FiNoF,1),
                              val_labels : valid_OH_labels
                              }
                 _ , summary_fetch = session.run([train_op, summaries], feed_dict = feed_dict)
@@ -142,5 +142,3 @@ with tf.Session(graph = fishyfish) as session :
 
         with open(md+'/meta_dictionary.pickle', 'wb') as fmd :
             pickle.dump(meta_dict, fmd)
-
-        

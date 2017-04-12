@@ -187,8 +187,8 @@ with fishyfish.as_default() :
         with tf.name_scope('Classifiers') :
             val_logits = tf.matmul(v_dense_output, W_clf) + b_clf
         with tf.name_scope('Metrics') :
-            val_loss = tf.nn.softmax_cross_entropy_with_logits(
-                        logits = val_logits, labels = val_labels)
+            val_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
+                        logits = val_logits, labels = val_labels))
             val_acc = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(val_logits, 1), tf.argmax(val_labels, 1)), dtype = tf.float32))
 
     with tf.name_scope('Summaries') :
@@ -202,10 +202,11 @@ with fishyfish.as_default() :
             tf.summary.scalar('Label_Cost_Coefficient', gamma_label)
 
         with tf.name_scope('Train_Set') :
-            tf.summary.scalar("Cost", cost)
+            tf.summary.scalar('NaiveCrossEntropy', tf.reduce_mean(xent))
             tf.summary.scalar('Regularization', regularization_term)
             tf.summary.scalar('Fovea_cost', fovea_cost)
             tf.summary.scalar('Label_cost', label_cost)
+            tf.summary.scalar("Cost", cost)
         summaries = tf.summary.merge_all()
 
 
