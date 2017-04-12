@@ -44,8 +44,6 @@ with tf.Session(graph = fish_finder) as session :
         # NOTE : label_dictionary will be
         with open('label_dictionary.pickle', 'rb') as handle :
             label_dictionary = pickle.load(handle)
-        with open('prediction_dictionary.pickle', 'rb') as handle :
-            prediction_dict = pickle.load(handle)
 
         master = fd.generate_filenames_list()
         valid_fnames = []
@@ -121,13 +119,7 @@ with tf.Session(graph = fish_finder) as session :
                              beta : float(open('FishFinder/beta_rate.txt', 'r').read().strip()),
                              beta_regularizer : float(open('FishFinder/beta_reg.txt', 'r').read().strip())
                              }
-                _ , summary_fetch, batch_FishNoF_preds, batch_box_preds = session.run([train_op, summaries, stack_FishNoF_preds, stack_box_preds], feed_dict = feed_dict)
-
-                for i, key in enumerate(batch_key_list) :
-                    prediction_dict[key] =  {'box' : batch_box_preds[i, :],
-                                             'FiNoF' : batch_FishNoF_preds[i,:]}
-                    with open('prediction_dictionary.pickle', 'wb') as fprd :
-                        pickle.dump(prediction_dict, fprd)
+                _ , summary_fetch = session.run([train_op, summaries], feed_dict = feed_dict)
                 total_fovea += batch_size
                 writer.add_summary(summary_fetch, total_fovea)
 
@@ -142,3 +134,59 @@ with tf.Session(graph = fish_finder) as session :
 
         with open(md+'/meta_dictionary.pickle', 'wb') as fmd :
             pickle.dump(meta_dict, fmd)
+
+        # if counter == 0 : retrieve predictions
+        if counter == 0 :
+            print("Running Predictor on Training Examples...")
+
+            #retrieve most up to date label_dictionary
+            with open('label_dictionary.pickle', 'rb') as handle :
+                label_dictionary = pickle.load(handle)
+
+            prediction_keys = master.copy()
+            embedding_arr = np.zeros([len(label_dictionary), 32])
+            cursor = 0
+            while len(prediction_keys) > batch_size :
+                batch_key_list = []
+                for _ in range(batch_size) :
+                    batch_key_list.append( prediction_keys.pop(0))
+
+                batch_arr, is_fish_vector, box_arr, weights_vector = fd.bundle_mt(batch_key_list, label_dictionary = label_dictionary, fov_dim = fov_dim)
+                feed_dict = {coarse_images_for_prediction : batch_arr}
+
+                FiNoF_Probability, Box_Predictions, coarse_embedding = session.run([stack_FishNoF_preds, stack_box_preds, stack_dense_output], feed_dict = feed_dict)
+
+                for i, key in enumerate(batch_key_list) :
+                    label_dictionary[key].update({'FiNoF' : FiNoF_Probability[i],
+                                                  'box_preds' : Box_Predictions[i,:]})
+                    embedding_arr[cursor, :] = coarse_embedding[i, :]
+                    if (cursor % 256) == 0 :
+                        print("{} images embedded".format(cursor))
+                        print("Length of prediction_keys : {}".format(len(prediction_keys)))
+                    cursor += 1
+
+
+            # last run with leftovers
+            batch_arr, is_fish_vector, box_arr, weights_vector = fd.bundle_mt(prediction_keys, label_dictionary = label_dictionary, fov_dim = fov_dim)
+            feed_dict = {coarse_images_for_prediction : batch_arr}
+
+            FiNoF_Probability, Box_Predictions, coarse_embedding = session.run([stack_FishNoF_preds, stack_box_preds, stack_dense_output], feed_dict = feed_dict)
+
+            for i, key in enumerate(prediction_keys) :
+                label_dictionary[key].update({'FiNoF' : FiNoF_Probability[i],
+                                              'box_preds' : Box_Predictions[i,:]})
+                embedding_arr[cursor, :] = coarse_embedding[i, :]
+                cursor += 1
+
+
+
+            with open('label_dictionary.pickle', 'wb') as fld :
+                pickle.dump(label_dictionary, fld)
+
+            embedding_df = pd.DataFrame(embedding_arr, index = master.copy())
+            embedding_df.to_pickle('embedding_dataframe.pickle')
+
+            counter = predict_every_z
+            print("Prediction of training examples finished and saved to working directory")
+        else :
+            counter -= 1

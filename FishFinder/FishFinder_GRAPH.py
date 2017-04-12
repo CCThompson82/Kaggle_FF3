@@ -179,10 +179,10 @@ with fish_finder.as_default() :
 
     with tf.name_scope('Validation') :
         with tf.name_scope('Input') :
-            valid_set = tf.placeholder(tf.float32, shape = [valid_coarse.shape[0], valid_coarse.shape[1], valid_coarse.shape[2], num_channels])
-            valid_labels = tf.placeholder(tf.float32, shape = [valid_is_fish.shape[0],valid_is_fish.shape[1]])
-            valid_box_targets = tf.placeholder(tf.float32, shape = [valid_box.shape[0], valid_box.shape[1]])
-            valid_box_weights = tf.placeholder(tf.float32, shape = [valid_weights.shape[0], 1])
+            valid_set = tf.placeholder(tf.float32, shape = [200, coarse_dims[0], coarse_dims[1], num_channels])
+            valid_labels = tf.placeholder(tf.float32, shape = [200,1])
+            valid_box_targets = tf.placeholder(tf.float32, shape = [200, 3])
+            valid_box_weights = tf.placeholder(tf.float32, shape = [200,1])
         with tf.name_scope('Network') :
             valid_conv_output = convolutions(valid_set)
             valid_dense_input = tf.contrib.layers.flatten(valid_conv_output)
@@ -228,7 +228,8 @@ with fish_finder.as_default() :
 
     with tf.name_scope('Prediction') :
         with tf.name_scope('Network') :
-            stack_conv_output = convolutions(coarse_images)
+            coarse_images_for_prediction = tf.placeholder(dtype = tf.float32, shape = [None, coarse_dims[0], coarse_dims[1], num_channels])
+            stack_conv_output = convolutions(coarse_images_for_prediction)
             stack_dense_input = tf.contrib.layers.flatten(stack_conv_output)
             stack_dense_output = dense_layers(stack_dense_input, keep_prob = [1.0,1.0,1.0,1.0])
         with tf.name_scope('Classifiers') :
